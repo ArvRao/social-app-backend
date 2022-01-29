@@ -5,12 +5,14 @@ const mongoose = require('mongoose')
 const morgan = require('morgan');
 const app = express();
 app.use(express.json())
+app.use(morgan("common"));
 
 require('./src/models/user')
 
 dotenv.config()
+const auth = require('./src/routes/auth')
 
-app.use(require('./src/routes/auth'))
+app.use('/api', auth)
 // database connection
 mongoose
   .connect(process.env.MONGODB_URL, {
@@ -26,18 +28,17 @@ mongoose
 
 
 const customMiddleware = (req, res, next) => {
-    console.log('Custom middleware');
-    next();
+  console.log('Custom middleware');
+  next();
 }
 
 // middlewares
-app.use(morgan("common"));
 
 app.get('/', customMiddleware, (req, res) => {
-    console.log('Route');
-    res.send('Working...');
+  console.log('Route');
+  res.send('Working...');
 })
 
-app.listen(process.env.PORT, (req, res) => {
-    console.log(`Server running at port ${process.env.PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running at port ${process.env.PORT}`);
 })
