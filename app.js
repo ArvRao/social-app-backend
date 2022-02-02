@@ -29,7 +29,6 @@ mongoose
 
 const customMiddleware = (req, res, next) => {
   console.log('Custom middleware');
-  next();
 }
 
 // middlewares
@@ -39,6 +38,6 @@ app.get('/', customMiddleware, (req, res) => {
   res.send('Working...');
 })
 
-app.listen(process.env.PORT, () => {
+server = app.listen(process.env.PORT, () => {
   console.log(`Server running at port ${process.env.PORT}`);
 })
