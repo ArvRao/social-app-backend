@@ -3,11 +3,11 @@ const router = express.Router()
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const emailvalidator = require("email-validator");
+const jwt = require('jsonwebtoken');
 const User = mongoose.model("User")
+const requireLogin = require('../middlewares/requireLogin')
+const vars = require('../config/vars')
 
-router.get('/route', (req, res) => {
-    res.send('router route')
-})
 
 router.post('/signup', (req, res) => {
     const {
@@ -59,6 +59,51 @@ router.post('/signup', (req, res) => {
         }).catch((err) => {
             console.log(err);
         })
+})
+
+router.post('/login', (req, res) => {
+    const {
+        email,
+        password
+    } = req.body
+    if (!email || !password) {
+        return res.status(422).json({
+            message: 'Please enter your email or password fields'
+        })
+    }
+
+    User.findOne({
+        email: email
+    }).then(savedUser => {
+        if (!savedUser) {
+            return res.status(422).json({
+                error: 'Invalid email or password'
+            })
+        }
+
+        bcrypt.compare(password, savedUser.password)
+            .then((matchedPassword) => {
+                if (matchedPassword) {
+                    const token = jwt.sign({
+                        id: savedUser._id,
+                        name: savedUser.name
+                    }, vars.jwtSecret, {
+                        expiresIn: vars.jwtExpirationInterval,
+                    })
+                    res.status(200).json({
+                        token
+                    })
+                } else {
+                    return res.status(422).json({
+                        message: 'Invalid email or password!'
+                    })
+                }
+            })
+            .catch(err => {
+                // produced from our end, not client side
+                console.log(err);
+            })
+    })
 })
 
 module.exports = router

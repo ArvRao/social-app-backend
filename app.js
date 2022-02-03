@@ -6,16 +6,26 @@ const morgan = require('morgan');
 const app = express();
 app.use(express.json())
 app.use(morgan("common"));
-
-require('./src/models/user')
+const user = require('./src/models/user')
+const vars = require('./src/config/vars')
+const requireLogin = require('./src/middlewares/requireLogin')
 
 dotenv.config()
 const auth = require('./src/routes/auth')
 
 app.use('/api', auth)
+
+
+app.get('/route', requireLogin, (req, res) => {
+  res.send('Test router route successful with requireLogin using JWT!')
+})
+
+
+// * open mongoose connection
+app.use('/api', auth)
 // database connection
 mongoose
-  .connect(process.env.MONGODB_URL, {
+  .connect(vars.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -26,18 +36,16 @@ mongoose
     console.log(err)
   })
 
-
 const customMiddleware = (req, res, next) => {
   console.log('Custom middleware');
 }
 
 // middlewares
-
 app.get('/', customMiddleware, (req, res) => {
   console.log('Route');
   res.send('Working...');
 })
 
-server = app.listen(process.env.PORT, () => {
-  console.log(`Server running at port ${process.env.PORT}`);
+app.listen(vars.port, () => {
+  console.log(`Server running at port ${vars.port}`);
 })
