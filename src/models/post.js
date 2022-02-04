@@ -20,7 +20,9 @@ const postSchema = new mongoose.Schema({
         type: ObjectId, // Id of user who created the post
         ref: 'User',
         required: true,
-    }
+    },
+}, {
+    timestamps: true
 })
 
 const Post = mongoose.model('Post', postSchema)
