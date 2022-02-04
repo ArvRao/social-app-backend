@@ -1,6 +1,5 @@
 // imports
 const dotenv = require('dotenv');
-const user = require('./src/models/user')
 const {
   app,
   mongoose,
@@ -9,6 +8,7 @@ const {
 const requireLogin = require('./src/middlewares/requireLogin')
 
 const auth = require('./src/routes/auth')
+const post = require('./src/routes/post')
 dotenv.config()
 
 //* database connection
@@ -16,16 +16,13 @@ mongoose.connect();
 
 //* Middlewares
 app.use('/api', auth)
+app.use('/posts', post)
 
 //? Test
 const customMiddleware = (req, res, next) => {
   console.log('Custom middleware');
   next()
 }
-
-app.get('/protected', requireLogin, (req, res) => {
-  res.send('Test router route successful with requireLogin using JWT!')
-})
 
 // middlewares
 app.get('/', customMiddleware, (req, res) => {

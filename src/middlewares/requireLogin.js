@@ -30,9 +30,7 @@ module.exports = (req, res, next) => {
         User.findById(id).then(userdata => {
             //* all values of particular user available
             req.user = userdata
-            console.log(userdata)
+            next()
         })
-
-        next()
     })
 }
