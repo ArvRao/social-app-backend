@@ -1,5 +1,6 @@
 const express = require('express');
 const helmet = require('helmet')
+const morgan = require('morgan');
 const xss = require("xss-clean");
 const mongoSanitize = require("express-mongo-sanitize");
 
@@ -11,6 +12,8 @@ app.use(express.json())
 app.use(express.urlencoded({
     extended: true
 }));
+
+app.use(morgan("common"));
 
 // set security HTTP headers
 app.use(helmet());

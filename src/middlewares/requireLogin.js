@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
         authorization
     } = req.headers
 
-    // * Syntax: authorization === Bearer <token>
+    // * Syntax: authorization(in header) === Bearer <token>
     if (!authorization) {
         return res.status(401).json({
             error: 'You are not authorized!'
@@ -23,13 +23,16 @@ module.exports = (req, res, next) => {
                 error: 'You are be logged in!'
             })
         }
-
         const {
-            _id
+            id
         } = payload
-        User.findById(_id).then(userdata => {
+
+        User.findById(id).then(userdata => {
+            //* all values of particular user available
             req.user = userdata
+            console.log(userdata)
         })
+
         next()
     })
 }
