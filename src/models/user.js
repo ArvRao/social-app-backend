@@ -12,8 +12,18 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    desc: {
+        type: String,
+        max: 50
+    },
+    city: {
+        type: String,
+        max: 50
     }
-})
+}, {
+    timestamps: true
+}, )
 
 const User = mongoose.model('User', userSchema)
 

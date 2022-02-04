@@ -17,9 +17,11 @@
     "dotenv": "^14.3.2",
     "email-validator": "^2.0.4",
     "express": "^4.17.2",
+    "express-mongo-sanitize": "^2.2.0",
     "helmet": "^5.0.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.1.8",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "xss-clean": "^0.1.1"
   }
 }

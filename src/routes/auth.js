@@ -7,7 +7,9 @@ const jwt = require('jsonwebtoken');
 const User = mongoose.model("User")
 const requireLogin = require('../middlewares/requireLogin')
 const vars = require('../config/vars')
-
+const {
+    login
+} = require('../controllers/login.controller')
 
 router.post('/signup', (req, res) => {
     const {
@@ -61,49 +63,6 @@ router.post('/signup', (req, res) => {
         })
 })
 
-router.post('/login', (req, res) => {
-    const {
-        email,
-        password
-    } = req.body
-    if (!email || !password) {
-        return res.status(422).json({
-            message: 'Please enter your email or password fields'
-        })
-    }
-
-    User.findOne({
-        email: email
-    }).then(savedUser => {
-        if (!savedUser) {
-            return res.status(422).json({
-                error: 'Invalid email or password'
-            })
-        }
-
-        bcrypt.compare(password, savedUser.password)
-            .then((matchedPassword) => {
-                if (matchedPassword) {
-                    const token = jwt.sign({
-                        id: savedUser._id,
-                        name: savedUser.name
-                    }, vars.jwtSecret, {
-                        expiresIn: vars.jwtExpirationInterval,
-                    })
-                    res.status(200).json({
-                        token
-                    })
-                } else {
-                    return res.status(422).json({
-                        message: 'Invalid email or password!'
-                    })
-                }
-            })
-            .catch(err => {
-                // produced from our end, not client side
-                console.log(err);
-            })
-    })
-})
+router.post('/login', login)
 
 module.exports = router
