@@ -5,7 +5,7 @@ const {
 } = require("../config");
 const Post = require('../models/post')
 
-
+//? Create a new post
 const createPost = async (req, res) => {
     try {
         const {
@@ -37,6 +37,7 @@ const createPost = async (req, res) => {
     }
 }
 
+//? Get all posts
 const allPosts = async (req, res) => {
     try {
         const {
@@ -57,7 +58,27 @@ const allPosts = async (req, res) => {
     }
 }
 
+//? get all posts of the particular user
+const myPosts = async (req, res) => {
+    try {
+        Post.find({
+                //* Compare the user id's
+                postedBy: req.user._id
+            })
+            .populate("postedBy", "_id name")
+            .then(myposts => {
+                res.json({
+                    total: myposts.length,
+                    myposts
+                })
+            })
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     createPost,
     allPosts,
+    myPosts,
 }

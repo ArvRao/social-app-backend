@@ -6,12 +6,14 @@ const router = express.Router()
 const requireLogin = require("../middlewares/requireLogin")
 const {
     createPost,
-    allPosts
+    allPosts,
+    myPosts
 } = require("../controllers/posts.controllers")
-
 
 router.post('/create', requireLogin, createPost)
 
 router.get('/all', requireLogin, allPosts)
+
+router.get('/myposts', requireLogin, myPosts)
 
 module.exports = router
