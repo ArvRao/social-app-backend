@@ -1,11 +1,6 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 const emailvalidator = require("email-validator");
 const User = require("../models/user");
-const {
-    jwtSecret
-} = require("../config/vars");
 
 // getUsers, signup, getUser, updateUser, VerifyEmail, forgotPassword, updatePassword, friends module
 
@@ -63,7 +58,7 @@ const signup = async (req, res) => {
         }).catch((err) => {
             console.log(err);
         })
-}
+};
 
 module.exports = {
     signup

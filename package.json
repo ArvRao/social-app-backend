@@ -13,7 +13,9 @@
     "nodemon": "^2.0.15"
   },
   "dependencies": {
+    "axios": "^0.25.0",
     "bcrypt": "^5.0.1",
+    "cloudinary": "^1.28.1",
     "dotenv": "^14.3.2",
     "email-validator": "^2.0.4",
     "express": "^4.17.2",
@@ -22,6 +24,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.1.8",
     "morgan": "^1.10.0",
+    "multer": "^1.4.4",
     "xss-clean": "^0.1.1"
   }
 }

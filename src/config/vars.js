@@ -7,6 +7,7 @@ require('dotenv').config({
 module.exports = {
     port: process.env.PORT,
     jwtSecret: process.env.JWT_SECRET,
+    mediaPort: process.env.MEDIA_PORT,
     jwtExpirationInterval: process.env.JWT_EXPIRATION_INTERVAL,
     resetPasswordExpirationInterval: process.env.JWT_RESET_PASSWORD_EXPIRATION_INTERVAL,
     // MONGODB URL
@@ -20,8 +21,8 @@ module.exports = {
         port: process.env.EMAIL_PORT,
     },
     cloudinaryConfig: {
-        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-        apiKey: process.env.CLOUDINARY_API_KEY,
-        apiSecret: process.env.CLOUDINARY_API_SECRET,
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
     },
 }

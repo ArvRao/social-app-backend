@@ -6,9 +6,11 @@ const {
   vars
 } = require("./src/config");
 const requireLogin = require('./src/middlewares/requireLogin')
+const uploadMedia = require('./src/routes/media')
 
 const auth = require('./src/routes/auth')
 const post = require('./src/routes/post')
+
 dotenv.config()
 
 //* database connection
@@ -16,19 +18,11 @@ mongoose.connect();
 
 //* Middlewares
 app.use('/api', auth)
-app.use('/posts', post)
+app.use('/posts', requireLogin, post)
+app.use('/upload', uploadMedia)
 
-//? Test
-const customMiddleware = (req, res, next) => {
-  console.log('Custom middleware');
-  next()
-}
 
-// middlewares
-app.get('/', customMiddleware, (req, res) => {
-  res.send('Working...');
-})
-
+// Start the server
 app.listen(vars.port, () => {
   console.log(`Server running at port ${vars.port}`);
 })

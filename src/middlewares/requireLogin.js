@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose')
 const vars = require('../config/vars')
 const User = require('../models/user')
 // important to import model rather than the file
@@ -20,9 +19,10 @@ module.exports = (req, res, next) => {
     jwt.verify(token, vars.jwtSecret, (err, payload) => {
         if (err) {
             return res.status(401).json({
-                error: 'You are be logged in!'
+                error: 'You are not logged in!'
             })
         }
+
         const {
             id
         } = payload
@@ -30,6 +30,7 @@ module.exports = (req, res, next) => {
         User.findById(id).then(userdata => {
             //* all values of particular user available
             req.user = userdata
+
             next()
         })
     })

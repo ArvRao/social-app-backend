@@ -3,17 +3,17 @@ const {
 } = require("../config");
 const express = require("express");
 const router = express.Router()
-const requireLogin = require("../middlewares/requireLogin")
+
 const {
     createPost,
     allPosts,
     myPosts
 } = require("../controllers/posts.controllers")
 
-router.post('/create', requireLogin, createPost)
+router.post('/create', createPost)
 
-router.get('/all', requireLogin, allPosts)
+router.get('/all', allPosts)
 
-router.get('/myposts', requireLogin, myPosts)
+router.get('/myposts', myPosts)
 
 module.exports = router

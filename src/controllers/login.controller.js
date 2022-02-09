@@ -7,17 +7,13 @@ const {
     vars
 } = require("../config");
 
-const {
-    jwtSecret,
-    jwtExpirationInterval
-} = require("../config/vars");
-
 
 const login = async (req, res) => {
     const {
         email,
         password
     } = req.body
+
     if (!email || !password) {
         return res.status(422).json({
             message: 'Please enter your email or password fields'
@@ -36,14 +32,27 @@ const login = async (req, res) => {
         bcrypt.compare(password, savedUser.password)
             .then((matchedPassword) => {
                 if (matchedPassword) {
+                    const {
+                        _id,
+                        name,
+                        email
+                    } = savedUser
+
+                    //* create a token
                     const token = jwt.sign({
                         id: savedUser._id,
                         name: savedUser.name
                     }, vars.jwtSecret, {
                         expiresIn: vars.jwtExpirationInterval,
                     })
+
                     res.status(200).json({
-                        token
+                        token,
+                        user: {
+                            _id,
+                            name,
+                            email
+                        }
                     })
                 } else {
                     return res.status(422).json({

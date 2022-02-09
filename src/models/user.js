@@ -17,10 +17,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         max: 50
     },
+    profilePic: {
+        type: String,
+        default: null
+    },
     city: {
         type: String,
         max: 50
-    }
+    },
+    cloudinaryId: {
+        type: String,
+        default: null
+    },
 }, {
     timestamps: true
 }, )

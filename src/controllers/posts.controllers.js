@@ -29,6 +29,7 @@ const createPost = async (req, res) => {
         })
         await post.save().then((result) => {
             res.status(201).json({
+                message: 'success',
                 post: result
             })
         })
@@ -37,7 +38,7 @@ const createPost = async (req, res) => {
     }
 }
 
-//? Get all posts
+//? Get all posts by pagination
 const allPosts = async (req, res) => {
     try {
         const {
