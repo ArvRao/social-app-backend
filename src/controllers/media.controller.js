@@ -1,19 +1,11 @@
 const {
     app,
-    mongoose,
-    vars,
     cloudinary
 } = require("../config");
-const User = require("../models/user")
-const path = require("path")
 const express = require('express');
 app.use(express.json());
 
 const uploadMedia = async (req, res) => {
-    const {
-        userId
-    } = req.body
-
     try {
         if (!req.file)
             return res
@@ -23,16 +15,17 @@ const uploadMedia = async (req, res) => {
                     message: "No file is selected"
                 });
 
-
         const result = await cloudinary.uploader.upload(req.file.path)
+        if (req.user) {
+            req.user.profilePic = result.secure_url
+            req.user.cloudinaryId = result.public_id;
+            req.user.save();
 
-        await User.findById(userId, (err, userData) => {
-            if (userData) {
-                userData.profilePic = result.secure_url;
-                userData.cloudinaryId = result.public_id;
-            }
-            userData.save();
-        });
+            res.status(201).json({
+                success: true,
+                message: 'Profile picture was uploaded successfully'
+            })
+        }
     } catch (error) {
         return res.status(500).json({
             success: false,

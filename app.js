@@ -19,7 +19,7 @@ mongoose.connect();
 //* Middlewares
 app.use('/api', auth)
 app.use('/posts', requireLogin, post)
-app.use('/upload', uploadMedia)
+app.use('/upload', requireLogin, uploadMedia)
 
 
 // Start the server
