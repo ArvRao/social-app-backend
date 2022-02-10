@@ -7,7 +7,7 @@ const {
 } = require("./src/config");
 const requireLogin = require('./src/middlewares/requireLogin')
 const uploadMedia = require('./src/routes/media')
-
+const users = require('./src/routes/user.route')
 const auth = require('./src/routes/auth')
 const post = require('./src/routes/post')
 
@@ -20,7 +20,7 @@ mongoose.connect();
 app.use('/api', auth)
 app.use('/posts', requireLogin, post)
 app.use('/upload', requireLogin, uploadMedia)
-
+app.use('/users', users)
 
 // Start the server
 app.listen(vars.port, () => {

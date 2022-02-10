@@ -1,6 +1,9 @@
 const bcrypt = require("bcrypt");
 const emailvalidator = require("email-validator");
 const User = require("../models/user");
+const {
+    cloudinary
+} = require('../config')
 
 // getUsers, signup, getUser, updateUser, VerifyEmail, forgotPassword, updatePassword, friends module
 
@@ -60,6 +63,64 @@ const signup = async (req, res) => {
         })
 };
 
+const signout = async (req, res) => {
+    try {
+        res.cookie('token')
+        return res.status(200).json({
+            message: 'Token has been deleted successfully',
+        })
+    } catch (error) {
+        return res.status(404).json({
+            success: false,
+            message: 'Something went wrong'
+        })
+    }
+}
+
+const allUsers = async (req, res) => {
+    try {
+        let users = await User.find()
+        res.status(200).json({
+            success: true,
+            total: users.length,
+            users
+        })
+    } catch (error) {
+        return res.status(404).json({
+            success: false,
+            message: 'Something went wrong'
+        })
+    }
+}
+
+const deleteUser = async (req, res) => {
+    try {
+        // find user by id
+        const user = await User.findById(req.params.id);
+        // delete image from cloudinary
+        if (user.cloudinaryId) {
+            await cloudinary.uploader.destroy(user.cloudinaryId);
+        }
+
+        // delete user from database
+        await user.remove();
+        return res.status(200).json({
+            message: 'User deleted successfully',
+            user
+        })
+        // return res.status(204).json({
+        //     success: true,
+        //     message: 'User deleted successfully'
+        // })
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
-    signup
+    signup,
+    signout,
+    allUsers,
+    deleteUser
 }
