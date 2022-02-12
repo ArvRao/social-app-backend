@@ -13,7 +13,7 @@ const {
 // all routes
 router.post('/register', signup)
 
-router.delete('/logout', requireLogin, signout)
+router.get('/logout', requireLogin, signout)
 
 router.post('/login', login)
 

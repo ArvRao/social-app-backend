@@ -5,6 +5,7 @@ const {
     cloudinary
 } = require('../config')
 
+
 // getUsers, signup, getUser, updateUser, VerifyEmail, forgotPassword, updatePassword, friends module
 
 const signup = async (req, res) => {
@@ -65,8 +66,13 @@ const signup = async (req, res) => {
 
 const signout = async (req, res) => {
     try {
-        res.cookie('token')
+        // req.logout();
+        // console.log(req.user);
+        req.token = '';
+        await console.log(req.token);
+        // res.cookie('token')
         return res.status(200).json({
+            success: true,
             message: 'Token has been deleted successfully',
         })
     } catch (error) {
@@ -108,11 +114,6 @@ const deleteUser = async (req, res) => {
             message: 'User deleted successfully',
             user
         })
-        // return res.status(204).json({
-        //     success: true,
-        //     message: 'User deleted successfully'
-        // })
-
     } catch (error) {
         console.log(error);
     }

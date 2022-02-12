@@ -78,8 +78,39 @@ const myPosts = async (req, res) => {
     }
 }
 
+//? delete particular post by _id
+const deletePost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+
+        await post.remove();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Post has been deleted successfully.',
+            post
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getPost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        res.status(200).json({
+            success: true,
+            post
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     createPost,
     allPosts,
     myPosts,
+    deletePost,
+    getPost,
 }
