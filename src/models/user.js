@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+const {
+    ObjectId
+} = mongoose.Types
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -29,6 +32,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    sharedPosts: [{
+        type: ObjectId,
+        ref: "Post"
+    }]
 }, {
     timestamps: true
 }, )

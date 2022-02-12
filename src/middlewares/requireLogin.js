@@ -26,11 +26,12 @@ module.exports = (req, res, next) => {
         const {
             id
         } = payload
-        req.token = token;
+        //* particular id of user is stored
+        req.userId = id;
+
         User.findById(id).then(userdata => {
             //* all values of particular user available
             req.user = userdata
-
             next()
         })
     })

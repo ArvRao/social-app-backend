@@ -4,6 +4,7 @@ const {
     app
 } = require("../config");
 const Post = require('../models/post')
+const User = require('../models/user')
 
 //? Create a new post
 const createPost = async (req, res) => {
@@ -95,6 +96,7 @@ const deletePost = async (req, res) => {
     }
 }
 
+//? get all the posts
 const getPost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -107,10 +109,107 @@ const getPost = async (req, res) => {
     }
 }
 
+//? like a post
+const likePost = async (req, res) => {
+    try {
+        const {
+            id
+        } = req.params;
+
+        // find post by Id
+        let post = await Post.findById(id);
+
+        // if no post found
+        if (!post)
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message: "No post with given id"
+                });
+        let message = "Post liked successfully";
+
+        const index = post.likes.findIndex(
+            (id) => id.toString() === String(req.user._id)
+        );
+        if (index === -1) {
+            // Like the post
+            post.likes.unshift(req.user._id);
+        } else {
+            // Dislike the post
+            post.likes = post.likes.filter(
+                (id) => id.toString() !== String(req.user._id)
+            );
+            message = "Post unliked successfully";
+        }
+
+        // update the post
+        await Post.findByIdAndUpdate(id, post);
+
+        res.status(200).json({
+            success: true,
+            message,
+            post
+        });
+    } catch (error) {
+        res
+            .status(500)
+            .json({
+                success: false,
+                message: "Something Went Wrong..."
+            });
+    }
+};
+
+//? share the post
+const sharePost = async (req, res) => {
+    try {
+        const {
+            id
+        } = req.params;
+
+        const post = await Post.findById(id);
+
+        // if no post found
+        if (!post)
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message: "No post with given id"
+                });
+
+        let user = await User.findById(req.userId)
+
+        // add the postId
+        user.sharedPosts.unshift(id);
+
+        // update the user
+        await User.findByIdAndUpdate(req.userId, user);
+
+        res
+            .status(200)
+            .json({
+                success: true,
+                message: "Post shared successfully"
+            });
+    } catch (error) {
+        res
+            .status(500)
+            .json({
+                success: false,
+                message: "Something Went Wrong..."
+            });
+    }
+};
+
+
 module.exports = {
     createPost,
     allPosts,
     myPosts,
     deletePost,
     getPost,
+    likePost,
+    sharePost
 }

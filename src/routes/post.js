@@ -10,7 +10,9 @@ const {
     allPosts,
     myPosts,
     deletePost,
-    getPost
+    getPost,
+    likePost,
+    sharePost
 } = require("../controllers/posts.controllers")
 
 router.get('/:id', requireLogin, getPost)
@@ -22,5 +24,9 @@ router.get('/all', requireLogin, allPosts)
 router.get('/myposts', requireLogin, myPosts)
 
 router.delete('/:id', requireLogin, deletePost)
+
+router.patch('/like/:id', requireLogin, likePost)
+
+router.patch('/share/:id', requireLogin, sharePost)
 
 module.exports = router
