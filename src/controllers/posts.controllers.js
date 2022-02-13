@@ -5,6 +5,33 @@ const {
 } = require("../config");
 const Post = require('../models/post')
 const User = require('../models/user')
+const Comment = require("../models/comment");
+
+const fetchPosts = async (req, res) => {
+    try {
+        const page = req.query.page ? req.query.page : 1;
+        const limit = req.query.perPage ? req.query.perPage : 20;
+        const skip = limit * (page - 1);
+
+        const posts = await Post.find()
+            .sort({
+                createdAt: -1
+            })
+            .limit(limit)
+            .skip(skip);
+
+        return res.status(200).json({
+            total: posts.length,
+            success: true,
+            message: "Posts fetched successfully",
+            data: posts,
+        });
+        // console.log('hello');
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 //? Create a new post
 const createPost = async (req, res) => {
@@ -39,45 +66,66 @@ const createPost = async (req, res) => {
     }
 }
 
-//? Get all posts by pagination
-const allPosts = async (req, res) => {
+const updatePost = async (req, res) => {
     try {
         const {
-            //? Default values that are modified by params
-            page = 1, limit = 5
-        } = req.query
-        Post.find()
-            .limit(limit * 1).skip((page - 1) * limit)
-            .populate("postedBy", "_id name")
-            .then(posts => {
-                res.status(200).json({
-                    total: posts.length,
-                    posts
-                })
-            })
-    } catch (err) {
-        console.log(err);
-    }
-}
+            id
+        } = req.params;
 
-//? get all posts of the particular user
-const myPosts = async (req, res) => {
-    try {
-        Post.find({
-                //* Compare the user id's
-                postedBy: req.user._id
-            })
-            .populate("postedBy", "_id name")
-            .then(myposts => {
-                res.json({
-                    total: myposts.length,
-                    myposts
-                })
-            })
-    } catch (err) {
-        console.log(err);
+
+        let post = await Post.findById(id);
+
+        // if no post found
+        if (!post)
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message: "No post with given id"
+                });
+
+        if (post.postedBy.toString() !== req.userId)
+            return res
+                .status(401)
+                .json({
+                    success: false,
+                    message: "Cannot update this post"
+                });
+
+        const {
+            body
+        } = req.body;
+
+        if (!body)
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "No data given for post"
+                });
+
+        // add body if provided
+        if (body) post.body = body;
+
+        // update the post
+        const updatedPost = await Post.findByIdAndUpdate(id, post, {
+            new: true
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Post updated successfully",
+            data: updatedPost,
+        });
+    } catch (error) {
+        res
+            .status(500)
+            .json({
+                success: false,
+                message: "Something Went Wrong..."
+            });
     }
-}
+};
 
 //? delete particular post by _id
 const deletePost = async (req, res) => {
@@ -187,7 +235,7 @@ const sharePost = async (req, res) => {
         // update the user
         await User.findByIdAndUpdate(req.userId, user);
 
-        res
+        return res
             .status(200)
             .json({
                 success: true,
@@ -206,10 +254,11 @@ const sharePost = async (req, res) => {
 
 module.exports = {
     createPost,
-    allPosts,
-    myPosts,
+    // myPosts,
+    updatePost,
     deletePost,
     getPost,
     likePost,
-    sharePost
+    sharePost,
+    fetchPosts,
 }

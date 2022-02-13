@@ -18,7 +18,7 @@ mongoose.connect();
 
 //* Middlewares
 app.use('/api', auth)
-app.use('/posts', requireLogin, post)
+app.use('/posts', post)
 app.use('/upload', requireLogin, uploadMedia)
 app.use('/users', users)
 

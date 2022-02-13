@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {
     ObjectId
-} = mongoose.Types
+} = mongoose.Schema.Types
 
 const postSchema = new mongoose.Schema({
     title: {
@@ -20,15 +20,19 @@ const postSchema = new mongoose.Schema({
         type: ObjectId,
         ref: "User"
     }],
+    comments: [{
+        type: ObjectId,
+        ref: "Comment"
+    }],
     postedBy: {
-        type: ObjectId, // Id of user who created the post
-        ref: 'User',
+        type: ObjectId,
+        ref: "User",
         required: true,
     },
 }, {
     timestamps: true
 })
 
-const Post = mongoose.model('Post', postSchema)
+const Post = mongoose.model("Post", postSchema)
 
 module.exports = Post
