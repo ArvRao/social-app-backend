@@ -32,7 +32,6 @@ const fetchPosts = async (req, res) => {
     }
 }
 
-
 //? Create a new post
 const createPost = async (req, res) => {
     try {

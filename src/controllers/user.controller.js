@@ -1,12 +1,23 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const emailvalidator = require("email-validator");
 const User = require("../models/user");
 const {
     cloudinary
 } = require('../config')
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+const {
+    vars,
+} = require("../config");
+const nodemailer = require('nodemailer');
 
 
-// getUsers, signup, getUser, updateUser, VerifyEmail, forgotPassword, updatePassword, friends module
+const transporter = nodemailer.createTransport(sendgridTransport({
+    auth: {
+        api_key: vars.emailConfig.api_key
+    }
+}))
+// getUsers, getUser, updateUser, VerifyEmail, forgotPassword, updatePassword, 
 
 const signup = async (req, res) => {
     const {
@@ -51,13 +62,20 @@ const signup = async (req, res) => {
                     city
                 })
 
-                user.save().then((savedUser) => {
-                    res.status(201).json({
-                        message: `New user ${savedUser.name} is successfully saved to the database`
+                user.save()
+                    .then((savedUser) => {
+                        transporter.sendMail({
+                            to: savedUser.email,
+                            from: "arvindrao.759@gmail.com",
+                            subject: "SignUp successful. Welcome aboard",
+                            html: `<h1>Hey ${savedUser.name}, welcome to my social app. Hope you enjoy it!!</h1>`
+                        })
+                        res.status(201).json({
+                            message: `New user ${savedUser.name} is successfully saved to the database`
+                        })
+                    }).catch(err => {
+                        console.log(err);
                     })
-                }).catch(err => {
-                    console.log(err);
-                })
             })
         }).catch((err) => {
             console.log(err);
@@ -81,6 +99,127 @@ const signout = async (req, res) => {
             message: 'Something went wrong'
         })
     }
+}
+
+const resetPassword = (req, res) => {
+    crypto.randomBytes(32, (err, buff) => {
+        if (err) {
+            console.log(err);
+        }
+        // convert hexacode to string
+        const token = buff.toString("hex")
+        User.findOne({
+                email: req.body.email
+            })
+            .then(user => {
+                if (!user) {
+                    res.status(422).json({
+                        error: 'User doesnt exit with that email.'
+                    })
+                }
+
+                user.resetToken = token
+
+                console.log(user.resetToken);
+
+                // active for 1 hour
+                user.expireToken = Date.now() + 3600000
+
+
+                // active for 1 hour
+                // ********************** 
+                user.save().then((result) => {
+                    transporter.sendMail({
+                        to: user.email,
+                        from: vars.emailConfig.from,
+                        subject: "Password Reset",
+                        html: `
+                    <p>Password reset</p>
+                    <h5>
+                    Click on this link to reset your password
+                    <a href = "http://localhost:3000/reset-password/${token}">Click here</a>
+                    </h5>
+                    `
+                    })
+
+                    res.status(200).json({
+                        message: 'Check your email'
+                    })
+                })
+
+            })
+    })
+}
+
+const newbie = (req, res) => {
+    res.send(req.params.num)
+}
+
+const ResetPasswordToken = (req, res) => {
+    // const {
+    //     token
+    // } = req.params.token
+
+    const {
+        Existingpassword,
+        newPassword,
+        confirmPassword,
+        sentToken
+    } = req.body
+    console.log(req.user.password);
+    bcrypt.compare(Existingpassword, req.user.password)
+        .then((match) => {
+            if (match) {
+                if (newPassword !== confirmPassword) {
+                    return res.status(422).json({
+                        message: "Passwords don't match",
+                    })
+                } else {
+                    // check if token is valid
+                    // console.log(`Token is: ${req.user.resetToken}`);
+                    User.findOne({
+                            resetToken: sentToken,
+                            expireToken: {
+                                $gt: Date.now()
+                            }
+                        })
+                        .then(user => {
+                            console.log(user);
+                            if (!user) {
+                                return res.status(422).json({
+                                    message: 'Session has expired.'
+                                })
+                            }
+                            bcrypt.hash(newPassword, 12)
+                                .then(hashedPassword => {
+
+                                    user.password = hashedPassword
+                                    user.resetToken = undefined
+                                    user.expireToken = undefined
+
+                                    user.save().then((savedUser) => {
+                                        res.status(201).json({
+                                            message: "Password has been updated successfully!"
+                                        })
+                                    })
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                })
+                        })
+
+                }
+
+            } else {
+                return res.status(422).json({
+                    message: 'Your password is incorrect.',
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+        })
+
 }
 
 const allUsers = async (req, res) => {
@@ -119,9 +258,92 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const followUser = async (req, res) => {
+    const {
+        followId
+    } = req.body;
+
+    User.findByIdAndUpdate(followId, {
+        $push: {
+            followers: req.userId
+        }
+    }, {
+        new: true
+    }, (err, result) => {
+        if (err) {
+            return res.status(422).json({
+                error: err.message
+            })
+        } else {
+            console.log(result);
+        }
+        User.findByIdAndUpdate(req.userId, {
+                $push: {
+                    following: followId
+                },
+            }, {
+                new: true,
+            })
+            .then(result => {
+                res.status(200).json({
+                    success: true,
+                    message: 'You started following',
+                    result
+                })
+            }).catch(err => {
+                return res.status(422).json({
+                    error: err
+                })
+            })
+
+    })
+}
+
+
+const unfollowUser = async (req, res) => {
+    const {
+        unfollowId
+    } = req.body;
+
+    User.findByIdAndUpdate(unfollowId, {
+        $pull: {
+            followers: req.userId
+        }
+    }, {
+        new: true
+    }, (err, result) => {
+        if (err) {
+            return res.status(422).json({
+                error: err.message
+            })
+        }
+        User.findByIdAndUpdate(req.userId, {
+                $pull: {
+                    following: unfollowId
+                },
+            }, {
+                new: true,
+            })
+            .then(result => {
+                res.json(result)
+            }).catch(err => {
+                return res.status(422).json({
+                    error: err
+                })
+            })
+
+    })
+}
+
+
 module.exports = {
     signup,
     signout,
     allUsers,
-    deleteUser
+    deleteUser,
+    followUser,
+    unfollowUser,
+    resetPassword,
+    ResetPasswordToken,
+    newbie
 }

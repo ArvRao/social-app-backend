@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    resetToken: String,
+    expireToken: Date,
     desc: {
         type: String,
         max: 50
@@ -24,6 +26,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    friends: [{
+        type: ObjectId,
+        ref: "User"
+    }],
+    friendRequestsSent: [{
+        type: ObjectId,
+        ref: "User"
+    }],
+    friendRequests: [{
+        type: ObjectId,
+        ref: "User"
+    }],
+    blockedUsers: [{
+        type: ObjectId,
+        ref: "User"
+    }],
     city: {
         type: String,
         max: 50
@@ -35,6 +53,14 @@ const userSchema = new mongoose.Schema({
     sharedPosts: [{
         type: ObjectId,
         ref: "Post"
+    }],
+    followers: [{
+        type: ObjectId,
+        ref: "User"
+    }],
+    following: [{
+        type: ObjectId,
+        ref: "User"
     }]
 }, {
     timestamps: true

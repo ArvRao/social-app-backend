@@ -36,10 +36,10 @@ router.post('/create', requireLogin, createPost)
 // router.get('/myposts', requireLogin, myPosts)
 router.delete('/:id', requireLogin, deletePost)
 router.patch('/:id/likes', requireLogin, likePost)
-router.patch('/share/:id', requireLogin, sharePost)
+router.patch('/:id/share', requireLogin, sharePost)
 
 // comment routes
-router.get("/comments/:postId", requireLogin, fetchAllComments);
+router.get("/:postId/comments", requireLogin, fetchAllComments);
 router.post("/:postId/comments", requireLogin, createComment);
 router.get("/:postId/comments/:commentId", requireLogin, fetchComment);
 router.patch("/:postId/comments/:commentId", requireLogin, updateComment);

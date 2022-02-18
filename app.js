@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 const {
   app,
   mongoose,
-  vars
+  vars,
+  emailApp
 } = require("./src/config");
 const requireLogin = require('./src/middlewares/requireLogin')
 const uploadMedia = require('./src/routes/media')
@@ -26,6 +27,11 @@ app.use('/users', users)
 app.listen(vars.port, () => {
   console.log(`Server running at port ${vars.port}`);
 })
+
+// start email server
+emailApp.listen(vars.emailConfig.port, () =>
+  console.log(`Mailing Server started on port ${vars.emailConfig.port}`)
+);
 
 //! Handle unexpected errors
 process
