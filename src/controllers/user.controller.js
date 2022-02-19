@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const emailvalidator = require("email-validator");
+const mongoose = require("mongoose");
 const User = require("../models/user");
 const {
     cloudinary
@@ -258,46 +259,128 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const getBlockedUsers = async (req, res) => {
+    try {
+        const page = req.query.page ? req.query.page : 1;
+        const limit = req.query.perPage ? req.query.perPage : 20;
+        const skip = limit * (page - 1);
+        const user = await User.findById(req.userId)
+            .populate({
+                path: "blockedUsers",
+                model: User,
+                select: "name email profilePic city",
+            })
+            .slice("blockedUsers", [skip, limit]);
+
+        res.status(200).json({
+            success: true,
+            message: "Blocked users list access successful",
+            data: user.blockedUsers,
+        });
+    } catch (error) {
+        res
+            .status(500)
+            .json({
+                success: false,
+                message: "Something Went Wrong..."
+            });
+    }
+};
+
+const blockUser = async (req, res) => {
+    try {
+        const blockUserId = req.params.blockUserId;
+        const userId = req.userId;
+
+        let blockUser = await User.findById(blockUserId);
+        // check if blockUserId is valid
+        if (!blockUser)
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    message: "Invalid User id"
+                });
+
+        let user = await User.findById(userId);
+
+        user.friends = user.friends.filter((id) => id.toString() !== blockUserId);
+        user.friendRequests = user.friendRequests.filter(
+            (id) => id.toString() !== blockUserId
+        );
+        user.friendRequestsSent = user.friendRequestsSent.filter(
+            (id) => id.toString() !== blockUserId
+        );
+
+        if (!user.blockedUsers.includes(mongoose.Types.ObjectId(blockUserId)))
+            user.blockedUsers.unshift(blockUserId);
+
+        blockUser.friends = blockUser.friends.filter(
+            (id) => id.toString() !== userId
+        );
+        blockUser.friendRequests = blockUser.friendRequests.filter(
+            (id) => id.toString() !== userId
+        );
+        blockUser.friendRequestsSent = blockUser.friendRequestsSent.filter(
+            (id) => id.toString() !== userId
+        );
+
+        await User.findByIdAndUpdate(userId, user);
+        await User.findByIdAndUpdate(blockUserId, blockUser);
+
+        res
+            .status(200)
+            .json({
+                success: true,
+                message: `User ${blockUser.name} has been blocked successfully`
+            });
+    } catch (error) {
+        res
+            .status(500)
+            .json({
+                success: false,
+                message: "Something Went Wrong..."
+            });
+    }
+};
+
+
 const followUser = async (req, res) => {
+
     const {
         followId
-    } = req.body;
+    } = req.body
 
-    User.findByIdAndUpdate(followId, {
-        $push: {
-            followers: req.userId
-        }
-    }, {
-        new: true
-    }, (err, result) => {
-        if (err) {
-            return res.status(422).json({
-                error: err.message
-            })
-        } else {
-            console.log(result);
-        }
-        User.findByIdAndUpdate(req.userId, {
-                $push: {
-                    following: followId
-                },
-            }, {
-                new: true,
-            })
-            .then(result => {
-                res.status(200).json({
-                    success: true,
-                    message: 'You started following',
-                    result
-                })
-            }).catch(err => {
-                return res.status(422).json({
-                    error: err
-                })
-            })
+    // user account
+    const user = await User.findById(req.userId)
 
+    // user to be followed
+    let followUser = await User.findById(followId)
+
+    const following = user.following
+    const foundUser = following.includes(followId);
+
+    if (foundUser) {
+        return res.status(400).json({
+            success: false,
+            message: `You already follow ${followUser.name}`
+        })
+    }
+
+    await user.following.push(followId);
+
+    await followUser.followers.push(req.userId)
+
+    await user.save()
+    await followUser.save()
+
+    return res.status(200).json({
+        success: true,
+        message: `You started following ${followUser.name}`,
+        user
     })
 }
+
 
 
 const unfollowUser = async (req, res) => {
@@ -305,33 +388,32 @@ const unfollowUser = async (req, res) => {
         unfollowId
     } = req.body;
 
-    User.findByIdAndUpdate(unfollowId, {
-        $pull: {
-            followers: req.userId
-        }
-    }, {
-        new: true
-    }, (err, result) => {
-        if (err) {
-            return res.status(422).json({
-                error: err.message
-            })
-        }
-        User.findByIdAndUpdate(req.userId, {
-                $pull: {
-                    following: unfollowId
-                },
-            }, {
-                new: true,
-            })
-            .then(result => {
-                res.json(result)
-            }).catch(err => {
-                return res.status(422).json({
-                    error: err
-                })
-            })
+    // user account
+    const user = await User.findById(req.userId)
 
+    // user to be unfollowed
+    let unfollowUser = await User.findById(unfollowId)
+
+    const following = user.following
+    const foundUser = following.includes(unfollowId);
+
+    if (!foundUser) {
+        return res.status(400).json({
+            success: false,
+            message: `You don't follow ${unfollowUser.name}`
+        })
+    }
+
+    await user.following.pull(unfollowId);
+    await unfollowUser.followers.pull(req.userId)
+
+    await user.save()
+    await unfollowUser.save()
+
+    return res.status(200).json({
+        success: true,
+        message: `You have successfully unfollowed ${unfollowUser.name}`,
+        user
     })
 }
 
@@ -345,5 +427,7 @@ module.exports = {
     unfollowUser,
     resetPassword,
     ResetPasswordToken,
-    newbie
+    newbie,
+    getBlockedUsers,
+    blockUser
 }
