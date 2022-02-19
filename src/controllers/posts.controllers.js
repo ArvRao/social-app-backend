@@ -32,6 +32,53 @@ const fetchPosts = async (req, res) => {
     }
 }
 
+const getMyPosts = async (req, res) => {
+
+    try {
+        const page = req.query.page ? req.query.page : 1;
+        const limit = req.query.perPage ? req.query.perPage : 1;
+        const skip = limit * (page - 1);
+
+        const posts = await Post.find({
+                //* Compare the user id's
+                postedBy: req.user._id
+            })
+            .sort({
+                createdAt: -1
+            })
+            .limit(limit)
+            .skip(skip)
+            .populate("postedBy", "_id name")
+
+        return res.status(200).json({
+            total: posts.length,
+            myPosts: posts
+        })
+    } catch (error) {
+        console.log(err);
+    }
+}
+
+//? get all posts of the particular user
+// const myAllPosts = async (req, res) => {
+//     console.log('Hello');
+//     try {
+//         Post.find({
+//                 //* Compare the user id's
+//                 postedBy: req.user._id
+//             })
+//             .populate("postedBy", "_id name")
+//             .then(myposts => {
+//                 res.json({
+//                     total: myposts.length,
+//                     myposts
+//                 })
+//             })
+//     } catch (err) {
+//         console.log(err);
+//     }
+// }
+
 //? Create a new post
 const createPost = async (req, res) => {
     try {
@@ -252,8 +299,8 @@ const sharePost = async (req, res) => {
 
 
 module.exports = {
+    getMyPosts,
     createPost,
-    // myPosts,
     updatePost,
     deletePost,
     getPost,

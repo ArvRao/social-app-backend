@@ -15,9 +15,8 @@ const {
 } = require("../controllers/comment.controller");
 
 const {
+    getMyPosts,
     createPost,
-    postsAll,
-    // myPosts,
     deletePost,
     getPost,
     likePost,
@@ -29,11 +28,10 @@ const {
     route
 } = require("../config/express");
 router.get('/', requireLogin, fetchPosts)
-
+router.get('/fetchMyPosts', requireLogin, getMyPosts)
 router.patch("/:id", requireLogin, updatePost)
 router.get('/:id', requireLogin, getPost)
 router.post('/create', requireLogin, createPost)
-// router.get('/myposts', requireLogin, myPosts)
 router.delete('/:id', requireLogin, deletePost)
 router.patch('/:id/likes', requireLogin, likePost)
 router.patch('/:id/share', requireLogin, sharePost)
